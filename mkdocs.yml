@@ -1,0 +1,6 @@
+site_name: PyRMachines
+repo_url: https://github.com/guilhermehathy/pyrmachines
+repo_name: PyRMachines
+theme:
+  name: material
+  language: pt-BR
