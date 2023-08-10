@@ -1,17 +1,13 @@
-# Welcome to MkDocs
+<img src="img/rmachines-hex-01.png" width="120" align="right" />
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+# Random Machines
 
-## Commands
+Random Machines: a package for a support vector ensemble based on random kernel space.
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+## Bibliography
 
-## Project layout
+To learn more about the methods and how they are work please check.
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+**Ara, Anderson, et al. "Random Machines Regression Approach: an ensemble support vector regression model with free kernel choice." arXiv preprint arXiv:2003.12643 (2020).** [ArXiV Link](https://arxiv.org/abs/2003.12643)
+
+**Ara, Anderson, et al. "Random Machines: A bagged-weighted support vector model with free kernel choice." arXiv preprint arXiv:1911.09411 (2019).** [ArXiV Link](https://arxiv.org/abs/1911.09411)

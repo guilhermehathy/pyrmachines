@@ -4,3 +4,9 @@ repo_name: PyRMachines
 theme:
   name: material
   language: pt-BR
+  logo: img/rmachines-hex-01.png
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [pyrmachines]
