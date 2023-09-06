@@ -116,13 +116,13 @@ class RandomMachines:
             if (np.isinf(log_acc)):
                 log_acc = 1
             early_models.append(
-                {'kernel': kernel, "model": model, 'accuracy': accuracy, 'log_acc': log_acc})
+                {'kernel': kernel, "model": model, 'accuracy': accuracy, 'metric': log_acc})
 
         # Calculando as probabilidades para cada kernel
-        prob_weights_sum = sum(item["log_acc"] for item in early_models)
+        prob_weights_sum = sum(item["metric"] for item in early_models)
         lambda_values = {}
         for model in early_models:
-            prob_weights = model["log_acc"] / prob_weights_sum
+            prob_weights = model["metric"] / prob_weights_sum
             if (prob_weights < 0):
                 prob_weights = 0
             model["prob_weights"] = prob_weights
