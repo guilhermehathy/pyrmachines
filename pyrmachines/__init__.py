@@ -1,1 +1,1 @@
-from .rmachines import RandomMachines
+from .rmachines import RandomMachinesClassifier, RandomMachinesRegression

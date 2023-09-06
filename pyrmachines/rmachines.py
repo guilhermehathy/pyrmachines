@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
-from sklearn.svm import SVC
+from sklearn.svm import SVC, SVR
 from sklearn.metrics import accuracy_score
 from sklearn.metrics.pairwise import laplacian_kernel
 
 
-class RandomMachines:
+class RandomMachinesClassifier:
 
     def __init__(self,
                  poly_scale=2,
@@ -32,25 +32,7 @@ class RandomMachines:
         self.boots_size = boots_size
         self.seed_bootstrap = seed_bootstrap
         self.automatic_tuning = automatic_tuning
-
-    def create_bootstrap_sample(self, X_train, y_train):
-        X_train_size = X_train.shape[0]
-        X_train_range = range(X_train_size)
-        train_index = np.random.choice(
-            range(X_train_size), size=X_train_size, replace=True)
-        boots_sample_y = y_train.iloc[train_index]
-        frequency_table = boots_sample_y.value_counts()
-        while (frequency_table.iloc[1] < 2):
-            train_index = np.random.choice(
-                X_train_range, size=X_train_size, replace=True)
-            boots_sample_y = y_train.iloc[train_index]
-            frequency_table = boots_sample_y.value_counts()
-
-        return ({
-            'X_train': X_train.iloc[train_index],
-            'y_train': y_train.iloc[train_index],
-            'X_test': X_train.drop(train_index),
-            'y_test': y_train.drop(train_index)})
+        self.create_bootstrap_sample = utils().create_bootstrap_sample
 
     def fit_kernel(self, X_train, y_train, kernel):
         if (self.automatic_tuning):
@@ -182,3 +164,91 @@ class RandomMachines:
             for i in range(len(predict)):
                 predict_df.loc[i, predict[i]] += model_weights
         return list(predict_df.idxmax(axis=1))
+
+
+class RandomMachinesRegression:
+
+    def __init__(self,
+                 poly_scale=2,
+                 coef0_poly=0,
+                 gamma_rbf=1,
+                 degree=2,
+                 cost=10,
+                 boots_size=25, seed_bootstrap=None, automatic_tuning=False):
+        """
+        Parameters:
+            poly_scale: float, default=2
+            coef0_poly: float, default=0
+            gamma_rbf: float, default=1
+            degree: float, default=2
+            cost: float, default=10
+            boots_size: float, default=25
+            automatic_tuning: bool, default=False
+        """
+        self.poly_scale = poly_scale
+        self.coef0_poly = coef0_poly
+        self.gamma_rbf = gamma_rbf
+        self.degree = degree
+        self.cost = cost
+        self.boots_size = boots_size
+        self.seed_bootstrap = seed_bootstrap
+        self.automatic_tuning = automatic_tuning
+        self.create_bootstrap_sample = utils().create_bootstrap_sample
+
+    def fit_kernel(self, X_train, y_train, kernel):
+        if (self.automatic_tuning):
+            if (kernel == "laplacian"):
+                model = SVR(kernel=laplacian_kernel).fit(X_train, y_train)
+            else:
+                model = SVR(kernel=kernel).fit(X_train, y_train)
+            return model
+        else:
+            if (kernel == "linear"):
+                model = SVR(kernel="linear",
+                            C=self.cost,
+                            probability=True,
+                            verbose=0).fit(X_train, y_train)
+            elif (kernel == "poly"):
+                model = SVR(kernel="poly",
+                            C=self.cost,
+                            gamma=self.poly_scale,
+                            probability=True,
+                            coef0=self.coef0_poly,
+                            degree=self.degree,
+                            verbose=0).fit(X_train, y_train)
+            elif (kernel == "rbf"):
+                model = SVR(kernel="rbf",
+                            C=self.cost,
+                            probability=True,
+                            gamma=self.gamma_rbf,
+                            verbose=0).fit(X_train, y_train)
+            elif (kernel == "laplacian"):
+                model = SVR(kernel=laplacian_kernel,
+                            C=self.cost,
+                            probability=True,
+                            verbose=0).fit(X_train, y_train)
+            return model
+
+
+class utils:
+    def __init__(self):
+        pass
+
+    def create_bootstrap_sample(self, X_train, y_train):
+        X_train_size = X_train.shape[0]
+        X_train_range = range(X_train_size)
+        train_index = np.random.choice(
+            range(X_train_size), size=X_train_size, replace=True)
+        boots_sample_y = y_train.iloc[train_index]
+        frequency_table = boots_sample_y.value_counts()
+        while (frequency_table.iloc[1] < 2):
+            train_index = np.random.choice(
+                X_train_range, size=X_train_size, replace=True)
+            boots_sample_y = y_train.iloc[train_index]
+            frequency_table = boots_sample_y.value_counts()
+
+        return ({
+            'X_train': X_train.iloc[train_index],
+            'y_train': y_train.iloc[train_index],
+            'X_test': X_train.drop(train_index),
+            'y_test': y_train.drop(train_index)})
