@@ -31,8 +31,56 @@ class RandomMachines:
         self.boots_size = boots_size
         self.seed_bootstrap = seed_bootstrap
 
+    def create_bootstrap_sample(self, X_train, y_train):
+        X_train_size = X_train.shape[0]
+        X_train_range = range(X_train_size)
+        train_index = np.random.choice(
+            range(X_train_size), size=X_train_size, replace=True)
+        boots_sample_y = y_train.iloc[train_index]
+        frequency_table = boots_sample_y.value_counts()
+        while (frequency_table.iloc[1] < 2):
+            train_index = np.random.choice(
+                X_train_range, size=X_train_size, replace=True)
+            boots_sample_y = y_train.iloc[train_index]
+            frequency_table = boots_sample_y.value_counts()
+
+        return ({
+            'X_train': X_train.iloc[train_index],
+            'y_train': y_train.iloc[train_index],
+            'X_test': X_train.drop(train_index),
+            'y_test': y_train.drop(train_index)})
+
+    def fit_kernel(self, X_train, y_train, kernel):
+        if (kernel == "linear"):
+            model = SVC(kernel="linear",
+                        C=self.cost,
+                        probability=True,
+                        verbose=0).fit(X_train, y_train)
+        elif (kernel == "poly"):
+            model = SVC(kernel="poly",
+                        C=self.cost,
+                        gamma=self.poly_scale,
+                        probability=True,
+                        coef0=self.coef0_poly,
+                        degree=self.degree,
+                        verbose=0).fit(X_train, y_train)
+        elif (kernel == "rbf"):
+            model = SVC(kernel="rbf",
+                        C=self.cost,
+                        probability=True,
+                        gamma=self.gamma_rbf,
+                        verbose=0).fit(X_train, y_train)
+        elif (kernel == "laplacian"):
+            model = SVC(kernel=laplacian_kernel,
+                        C=self.cost,
+                        probability=True,
+                        verbose=0).fit(X_train, y_train)
+        return model
+
     def fit(self, X_train, y_train):
         # TODO: Implementar o automatico
+
+        kernel_type = ["linear", "poly", "rbf", "laplacian"]
 
         # Set seed
         if (self.seed_bootstrap is not None):
@@ -43,34 +91,10 @@ class RandomMachines:
 
         # Get Levels
         levels = y_train.unique()
-        kernel_type = ["linear", "poly", "rbf", "laplacian"]
 
         early_models = []
         for kernel in kernel_type:
-            if (kernel == "linear"):
-                model = SVC(kernel="linear",
-                            C=self.cost,
-                            probability=True,
-                            verbose=0).fit(X_train, y_train)
-            elif (kernel == "poly"):
-                model = SVC(kernel="poly",
-                            C=self.cost,
-                            gamma=self.poly_scale,
-                            probability=True,
-                            coef0=self.coef0_poly,
-                            degree=self.degree,
-                            verbose=0).fit(X_train, y_train)
-            elif (kernel == "rbf"):
-                model = SVC(kernel="rbf",
-                            C=self.cost,
-                            probability=True,
-                            gamma=self.gamma_rbf,
-                            verbose=0).fit(X_train, y_train)
-            elif (kernel == "laplacian"):
-                model = SVC(kernel=laplacian_kernel,
-                            C=self.cost,
-                            probability=True,
-                            verbose=0).fit(X_train, y_train)
+            model = self.fit_kernel(X_train, y_train, kernel)
             # TODO: Verificar é para usar X_train
             # TODO: Trocar a funcao log pois esta penalizando acc = 1
             predict = model.predict(X_train)
@@ -101,55 +125,16 @@ class RandomMachines:
         random_kernel = np.random.choice(
             kernel_type, self.boots_size, replace=True, p=p)
 
-        boots_sample = []
-        X_train_size = X_train.shape[0]
-        X_train_range = range(X_train_size)
-        for i in range(self.boots_size):
-            train_index = np.random.choice(
-                X_train_range, size=X_train_size, replace=True)
-            boots_sample_y = y_train.iloc[train_index]
-            frequency_table = boots_sample_y.value_counts()
-            while (frequency_table.iloc[1] < 2):
-                train_index = np.random.choice(
-                    X_train_range, size=X_train_size, replace=True)
-                boots_sample_y = y_train.iloc[train_index]
-                frequency_table = boots_sample_y.value_counts()
-
-            boots_sample.append({
-                'X_train': X_train.iloc[train_index],
-                'y_train': y_train.iloc[train_index],
-                'X_test': X_train.drop(train_index),
-                'y_test': y_train.drop(train_index)})
+        # Criando as amostras de bootstrap
+        boots_sample = [self.create_bootstrap_sample(
+            X_train, y_train) for i in range(self.boots_size)]
 
         models = []
         for index in range(len(random_kernel)):
             kernel = random_kernel[index]
             boot_sample = boots_sample[index]
-            if (kernel == "linear"):
-                model = SVC(kernel="linear",
-                            C=self.cost,
-                            probability=True,
-                            verbose=0).fit(boot_sample["X_train"], boot_sample["y_train"])
-            elif (kernel == "poly"):
-                model = SVC(kernel="poly",
-                            C=self.cost,
-                            gamma=self.poly_scale,
-                            probability=True,
-                            coef0=self.coef0_poly,
-                            degree=self.degree,
-                            verbose=0).fit(boot_sample["X_train"], boot_sample["y_train"])
-            elif (kernel == "rbf"):
-                model = SVC(kernel="rbf",
-                            C=self.cost,
-                            probability=True,
-                            gamma=self.gamma_rbf,
-                            verbose=0).fit(boot_sample["X_train"], boot_sample["y_train"])
-            elif (kernel == "laplacian"):
-                model = SVC(kernel=laplacian_kernel,
-                            C=self.cost,
-                            probability=True,
-                            verbose=0).fit(boot_sample["X_train"], boot_sample["y_train"])
-
+            model = self.fit_kernel(
+                boot_sample["X_train"], boot_sample["y_train"], kernel)
             # Predict na base de out of bag
             predict_oobg = model.predict(boot_sample["X_test"])
             accuracy = accuracy_score(boot_sample["y_test"], predict_oobg)
@@ -159,7 +144,6 @@ class RandomMachines:
 
         model_result = {
             "levels": levels,
-            "kernel_weight": kernel_weight,
             "lambda_values": lambda_values,
             "model_params": {
                 "poly_scale": self.poly_scale,
