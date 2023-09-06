@@ -13,7 +13,7 @@ class RandomMachines:
                  gamma_rbf=1,
                  degree=2,
                  cost=10,
-                 boots_size=25, seed_bootstrap=None):
+                 boots_size=25, seed_bootstrap=None, automatic_tuning=False):
         """
         Parameters:
             poly_scale: float, default=2
@@ -22,6 +22,7 @@ class RandomMachines:
             degree: float, default=2
             cost: float, default=10
             boots_size: float, default=25
+            automatic_tuning: bool, default=False
         """
         self.poly_scale = poly_scale
         self.coef0_poly = coef0_poly
@@ -30,6 +31,7 @@ class RandomMachines:
         self.cost = cost
         self.boots_size = boots_size
         self.seed_bootstrap = seed_bootstrap
+        self.automatic_tuning = automatic_tuning
 
     def create_bootstrap_sample(self, X_train, y_train):
         X_train_size = X_train.shape[0]
@@ -51,34 +53,42 @@ class RandomMachines:
             'y_test': y_train.drop(train_index)})
 
     def fit_kernel(self, X_train, y_train, kernel):
-        if (kernel == "linear"):
-            model = SVC(kernel="linear",
-                        C=self.cost,
-                        probability=True,
-                        verbose=0).fit(X_train, y_train)
-        elif (kernel == "poly"):
-            model = SVC(kernel="poly",
-                        C=self.cost,
-                        gamma=self.poly_scale,
-                        probability=True,
-                        coef0=self.coef0_poly,
-                        degree=self.degree,
-                        verbose=0).fit(X_train, y_train)
-        elif (kernel == "rbf"):
-            model = SVC(kernel="rbf",
-                        C=self.cost,
-                        probability=True,
-                        gamma=self.gamma_rbf,
-                        verbose=0).fit(X_train, y_train)
-        elif (kernel == "laplacian"):
-            model = SVC(kernel=laplacian_kernel,
-                        C=self.cost,
-                        probability=True,
-                        verbose=0).fit(X_train, y_train)
-        return model
+        if (self.automatic_tuning):
+            if (kernel == "laplacian"):
+                model = SVC(kernel=laplacian_kernel).fit(X_train, y_train)
+            else:
+                model = SVC(kernel=kernel).fit(X_train, y_train)
+            return model
+        else:
+            if (kernel == "linear"):
+                model = SVC(kernel="linear",
+                            C=self.cost,
+                            probability=True,
+                            verbose=0).fit(X_train, y_train)
+            elif (kernel == "poly"):
+                model = SVC(kernel="poly",
+                            C=self.cost,
+                            gamma=self.poly_scale,
+                            probability=True,
+                            coef0=self.coef0_poly,
+                            degree=self.degree,
+                            verbose=0).fit(X_train, y_train)
+            elif (kernel == "rbf"):
+                model = SVC(kernel="rbf",
+                            C=self.cost,
+                            probability=True,
+                            gamma=self.gamma_rbf,
+                            verbose=0).fit(X_train, y_train)
+            elif (kernel == "laplacian"):
+                model = SVC(kernel=laplacian_kernel,
+                            C=self.cost,
+                            probability=True,
+                            verbose=0).fit(X_train, y_train)
+            return model
 
     def fit(self, X_train, y_train):
-        # TODO: Implementar o automatico
+        # TODO: Implementar automatic_tuning
+        # TODO: Implementar parametros para o kernel laplacian
 
         kernel_type = ["linear", "poly", "rbf", "laplacian"]
 
