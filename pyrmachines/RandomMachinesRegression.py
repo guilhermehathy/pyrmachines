@@ -3,6 +3,7 @@ from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.svm import SVR
 from sklearn.metrics.pairwise import laplacian_kernel
 from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
 import numpy as np
 
 
@@ -86,10 +87,13 @@ class RandomMachinesRegression(BaseEstimator, RegressorMixin):
 
         # Training single model and calculating error metric
         early_models = []
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, random_state=self.seed_bootstrap, test_size=0.2)
+
         for kernel in kernel_type:
-            model = self.fit_kernel(X, y, kernel)
-            predict = model.predict(X)
-            rmse = mean_squared_error(y, predict, squared=False)
+            model = self.fit_kernel(X_train, y_train, kernel)
+            predict = model.predict(X_test)
+            rmse = mean_squared_error(y_test, predict, squared=False)
             early_models.append(
                 {'kernel': kernel, "model": model, 'metric': rmse})
             print(f"Kernel: {kernel} - RMSE: {rmse}")

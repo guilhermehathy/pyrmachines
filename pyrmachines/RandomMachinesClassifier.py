@@ -6,6 +6,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics.pairwise import laplacian_kernel
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 
 class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
@@ -81,10 +82,14 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
 
         # Training single model and calculating accuracy
         early_models = []
+
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, random_state=self.seed_bootstrap, test_size=0.2)
+
         for kernel in kernel_type:
-            model = self.fit_kernel(X, y, kernel)
-            predict = model.predict(X)
-            accuracy = accuracy_score(y, predict)
+            model = self.fit_kernel(X_train, y_train, kernel)
+            predict = model.predict(X_test)
+            accuracy = accuracy_score(y_test, predict)
             if (accuracy == 1):
                 log_acc = 6.906755
             elif (accuracy == 0):
@@ -186,26 +191,26 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
         if (kernel == "linear"):
             model = SVC(kernel="linear",
                         C=self.cost,
-                        probability=True,
+                        probability=False,
                         verbose=0).fit(X_train, y_train)
         elif (kernel == "poly"):
             model = SVC(kernel="poly",
                         C=self.cost,
                         gamma=self.poly_scale,
-                        probability=True,
+                        probability=False,
                         coef0=self.coef0_poly,
                         degree=self.degree,
                         verbose=0).fit(X_train, y_train)
         elif (kernel == "rbf"):
             model = SVC(kernel="rbf",
                         C=self.cost,
-                        probability=True,
+                        probability=False,
                         gamma='scale' if self.automatic_tuning else self.gamma_rbf,
                         verbose=0).fit(X_train, y_train)
         elif (kernel == "laplacian"):
             model = SVC(kernel=laplacian_kernel,
                         gamma='scale' if self.automatic_tuning else self.gamma_lap,
                         C=self.cost,
-                        probability=True,
+                        probability=False,
                         verbose=0).fit(X_train, y_train)
         return model
