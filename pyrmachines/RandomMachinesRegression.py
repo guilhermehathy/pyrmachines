@@ -43,6 +43,31 @@ class RandomMachinesRegression(BaseEstimator, RegressorMixin):
         self.automatic_tuning = automatic_tuning
 
     def fit(self, X, y):
+        """Fit the Random Machines Regression model according to the given training data.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features) \
+                or (n_samples, n_samples)
+            Training vectors, where `n_samples` is the number of samples
+            and `n_features` is the number of features.
+            For kernel="precomputed", the expected shape of X is
+            (n_samples, n_samples).
+
+        y : array-like of shape (n_samples,)
+            Target values (class labels in classification, real numbers in
+            regression).
+
+        sample_weight : array-like of shape (n_samples,), default=None
+            Per-sample weights. Rescale C per sample. Higher weights
+            force the classifier to put more emphasis on these points.
+
+        Returns
+        -------
+        self : object
+            Fitted estimator.
+        """
+
         # Check that X and y have correct shape
         X, y = check_X_y(X, y)
         # Store the classes seen during fit
@@ -118,6 +143,19 @@ class RandomMachinesRegression(BaseEstimator, RegressorMixin):
         return self
 
     def predict(self, X):
+        """Perform regression on samples in X.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            For kernel="precomputed", the expected shape of X is
+            (n_samples_test, n_samples_train).
+
+        Returns
+        -------
+        y_pred : ndarray of shape (n_samples,)
+            The predicted values.
+        """
         # Check if fit has been called
         check_is_fitted(self)
         # Input validation
