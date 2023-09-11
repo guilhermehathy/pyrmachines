@@ -7,9 +7,6 @@ from sklearn.metrics.pairwise import laplacian_kernel
 import numpy as np
 import pandas as pd
 
-# TODO: Implementar automatic_tuning
-# TODO: Trocar a funcao log pois esta penalizando acc = 1
-
 
 class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
 
@@ -90,6 +87,8 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
             accuracy = accuracy_score(y, predict)
             if (accuracy == 1):
                 log_acc = 6.906755
+            elif (accuracy == 0):
+                log_acc = -6.906755
             else:
                 log_acc = np.log(np.divide(accuracy, np.subtract(1, accuracy)))
             if (np.isinf(log_acc)):
@@ -184,36 +183,29 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
         return list(predict_df.idxmax(axis=1))
 
     def fit_kernel(self, X_train, y_train, kernel):
-        if (self.automatic_tuning):
-            if (kernel == "laplacian"):
-                model = SVC(kernel=laplacian_kernel,
-                            gamma=self.gamma_lap).fit(X_train, y_train)
-            else:
-                model = SVC(kernel=kernel).fit(X_train, y_train)
-            return model
-        else:
-            if (kernel == "linear"):
-                model = SVC(kernel="linear",
-                            C=self.cost,
-                            probability=True,
-                            verbose=0).fit(X_train, y_train)
-            elif (kernel == "poly"):
-                model = SVC(kernel="poly",
-                            C=self.cost,
-                            gamma=self.poly_scale,
-                            probability=True,
-                            coef0=self.coef0_poly,
-                            degree=self.degree,
-                            verbose=0).fit(X_train, y_train)
-            elif (kernel == "rbf"):
-                model = SVC(kernel="rbf",
-                            C=self.cost,
-                            probability=True,
-                            gamma=self.gamma_rbf,
-                            verbose=0).fit(X_train, y_train)
-            elif (kernel == "laplacian"):
-                model = SVC(kernel=laplacian_kernel,
-                            C=self.cost,
-                            probability=True,
-                            verbose=0).fit(X_train, y_train)
-            return model
+        if (kernel == "linear"):
+            model = SVC(kernel="linear",
+                        C=self.cost,
+                        probability=True,
+                        verbose=0).fit(X_train, y_train)
+        elif (kernel == "poly"):
+            model = SVC(kernel="poly",
+                        C=self.cost,
+                        gamma=self.poly_scale,
+                        probability=True,
+                        coef0=self.coef0_poly,
+                        degree=self.degree,
+                        verbose=0).fit(X_train, y_train)
+        elif (kernel == "rbf"):
+            model = SVC(kernel="rbf",
+                        C=self.cost,
+                        probability=True,
+                        gamma='scale' if self.automatic_tuning else self.gamma_rbf,
+                        verbose=0).fit(X_train, y_train)
+        elif (kernel == "laplacian"):
+            model = SVC(kernel=laplacian_kernel,
+                        gamma='scale' if self.automatic_tuning else self.gamma_lap,
+                        C=self.cost,
+                        probability=True,
+                        verbose=0).fit(X_train, y_train)
+        return model

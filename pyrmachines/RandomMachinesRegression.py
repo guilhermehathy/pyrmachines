@@ -174,36 +174,29 @@ class RandomMachinesRegression(BaseEstimator, RegressorMixin):
         return list(np.sum(final_predict, axis=0))
 
     def fit_kernel(self, X_train, y_train, kernel):
-        if (self.automatic_tuning):
-            if (kernel == "laplacian"):
-                model = SVR(kernel=laplacian_kernel,
-                            gamma=self.gamma_lap).fit(X_train, y_train)
-            else:
-                model = SVR(kernel=kernel).fit(X_train, y_train)
-            return model
-        else:
-            if (kernel == "linear"):
-                model = SVR(kernel="linear",
-                            C=self.cost,
-                            epsilon=self.epsilon,
-                            verbose=0).fit(X_train, y_train)
-            elif (kernel == "poly"):
-                model = SVR(kernel="poly",
-                            C=self.cost,
-                            epsilon=self.epsilon,
-                            gamma=self.poly_scale,
-                            coef0=self.coef0_poly,
-                            degree=self.degree,
-                            verbose=0).fit(X_train, y_train)
-            elif (kernel == "rbf"):
-                model = SVR(kernel="rbf",
-                            C=self.cost,
-                            epsilon=self.epsilon,
-                            gamma=self.gamma_rbf,
-                            verbose=0).fit(X_train, y_train)
-            elif (kernel == "laplacian"):
-                model = SVR(kernel=laplacian_kernel,
-                            C=self.cost,
-                            epsilon=self.epsilon,
-                            verbose=0).fit(X_train, y_train)
-            return model
+        if (kernel == "linear"):
+            model = SVR(kernel="linear",
+                        C=self.cost,
+                        epsilon=self.epsilon,
+                        verbose=0).fit(X_train, y_train)
+        elif (kernel == "poly"):
+            model = SVR(kernel="poly",
+                        C=self.cost,
+                        epsilon=self.epsilon,
+                        gamma=self.poly_scale,
+                        coef0=self.coef0_poly,
+                        degree=self.degree,
+                        verbose=0).fit(X_train, y_train)
+        elif (kernel == "rbf"):
+            model = SVR(kernel="rbf",
+                        C=self.cost,
+                        epsilon=self.epsilon,
+                        gamma='scale' if self.automatic_tuning else self.gamma_rbf,
+                        verbose=0).fit(X_train, y_train)
+        elif (kernel == "laplacian"):
+            model = SVR(kernel=laplacian_kernel,
+                        gamma='scale' if self.automatic_tuning else self.gamma_lap,
+                        C=self.cost,
+                        epsilon=self.epsilon,
+                        verbose=0).fit(X_train, y_train)
+        return model
