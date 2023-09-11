@@ -7,7 +7,6 @@ from sklearn.metrics.pairwise import laplacian_kernel
 import numpy as np
 import pandas as pd
 
-# TODO: Implementar argumentos do kernel laplaciano
 # TODO: Implementar automatic_tuning
 # TODO: Trocar a funcao log pois esta penalizando acc = 1
 
@@ -18,6 +17,7 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
                  poly_scale=2,
                  coef0_poly=0,
                  gamma_rbf=1,
+                 gamma_lap=1,
                  degree=2,
                  cost=10,
                  boots_size=25, seed_bootstrap=None, automatic_tuning=False):
@@ -26,6 +26,7 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
             poly_scale: float, default=2
             coef0_poly: float, default=0
             gamma_rbf: float, default=1
+            gamma_lap: float, default=1
             degree: float, default=2
             cost: float, default=10
             boots_size: float, default=25
@@ -34,6 +35,7 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
         self.poly_scale = poly_scale
         self.coef0_poly = coef0_poly
         self.gamma_rbf = gamma_rbf
+        self.gamma_lap = gamma_lap
         self.degree = degree
         self.cost = cost
         self.boots_size = boots_size
@@ -184,7 +186,8 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
     def fit_kernel(self, X_train, y_train, kernel):
         if (self.automatic_tuning):
             if (kernel == "laplacian"):
-                model = SVC(kernel=laplacian_kernel).fit(X_train, y_train)
+                model = SVC(kernel=laplacian_kernel,
+                            gamma=self.gamma_lap).fit(X_train, y_train)
             else:
                 model = SVC(kernel=kernel).fit(X_train, y_train)
             return model

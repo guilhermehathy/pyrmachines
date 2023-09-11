@@ -12,6 +12,7 @@ class RandomMachinesRegression(BaseEstimator, RegressorMixin):
                  poly_scale=2,
                  coef0_poly=0,
                  gamma_rbf=1,
+                 gamma_lap=1,
                  degree=2,
                  cost=1,
                  boots_size=25,
@@ -24,6 +25,7 @@ class RandomMachinesRegression(BaseEstimator, RegressorMixin):
             poly_scale: float, default=2
             coef0_poly: float, default=0
             gamma_rbf: float, default=1
+            gamma_lap: float, default=1
             degree: float, default=2
             cost: float, default=10
             boots_size: float, default=25
@@ -34,6 +36,7 @@ class RandomMachinesRegression(BaseEstimator, RegressorMixin):
         self.poly_scale = poly_scale
         self.coef0_poly = coef0_poly
         self.gamma_rbf = gamma_rbf
+        self.gamma_lap = gamma_lap
         self.degree = degree
         self.cost = cost
         self.epsilon = epsilon
@@ -173,7 +176,8 @@ class RandomMachinesRegression(BaseEstimator, RegressorMixin):
     def fit_kernel(self, X_train, y_train, kernel):
         if (self.automatic_tuning):
             if (kernel == "laplacian"):
-                model = SVR(kernel=laplacian_kernel).fit(X_train, y_train)
+                model = SVR(kernel=laplacian_kernel,
+                            gamma=self.gamma_lap).fit(X_train, y_train)
             else:
                 model = SVR(kernel=kernel).fit(X_train, y_train)
             return model
