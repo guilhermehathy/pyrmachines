@@ -89,7 +89,7 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
             predict = model.predict(X)
             accuracy = accuracy_score(y, predict)
             if (accuracy == 1):
-                log_acc = 1
+                log_acc = 6.906755
             else:
                 log_acc = np.log(np.divide(accuracy, np.subtract(1, accuracy)))
             if (np.isinf(log_acc)):
