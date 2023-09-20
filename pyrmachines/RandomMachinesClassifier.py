@@ -2,7 +2,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import check_scoring
 from sklearn.metrics.pairwise import laplacian_kernel
 import numpy as np
 import pandas as pd
@@ -18,6 +18,7 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
                  gamma_lap=1,
                  degree=2,
                  cost=10,
+                 metric='accuracy',
                  boots_size=25, seed_bootstrap=None, automatic_tuning=False):
         """
         Parameters:
@@ -36,6 +37,7 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
         self.gamma_lap = gamma_lap
         self.degree = degree
         self.cost = cost
+        self.metric = metric
         self.boots_size = boots_size
         self.seed_bootstrap = seed_bootstrap
         self.automatic_tuning = automatic_tuning
@@ -88,31 +90,33 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
 
         for kernel in kernel_type:
             model = self.fit_kernel(X_train, y_train, kernel)
-            predict = model.predict(X_test)
-            accuracy = accuracy_score(y_test, predict)
-            if (accuracy == 1):
-                log_acc = 6.906755
-            elif (accuracy == 0):
-                log_acc = -6.906755
+            # predict = model.predict(X_test)
+            # accuracy = accuracy_score(y_test, predict)
+            metric_score = check_scoring(model, self.metric)(model, X_test, y_test)
+            if (metric_score == 1):
+                metric_score_log = 6.906755
+            elif (metric_score == 0):
+                metric_score_log = -6.906755
             else:
-                log_acc = np.log(np.divide(accuracy, np.subtract(1, accuracy)))
-            if (np.isinf(log_acc)):
-                log_acc = 1
+                # metric_score_log = np.log(np.divide(metric_score, np.subtract(1, metric_score)))
+                metric_score_log = np.log(metric_score / (1 - metric_score))
+            if (np.isinf(metric_score_log)):
+                metric_score_log = 1
             early_models.append(
-                {'kernel': kernel, "model": model, 'accuracy': accuracy, 'metric': log_acc})
-            # print(f"Kernel: {kernel} - Accuracy: {accuracy} - Log: {log_acc}")
+                {'kernel': kernel, "model": model, 'metric_score': metric_score, 'metric_score_log': metric_score_log})
+            print(f"Kernel: {kernel} - Score: {metric_score} - Log: {metric_score_log}")
 
         # Calculating the probability of each kernel
-        prob_weights_sum = sum(item["metric"] for item in early_models)
+        prob_weights_sum = sum(item["metric_score_log"] for item in early_models)
         lambda_values = {}
         for model in early_models:
-            prob_weights = model["metric"] / prob_weights_sum
-            if (prob_weights < 0):
-                prob_weights = 0
+            prob_weights = max(model["metric_score_log"] / prob_weights_sum, 0)
+            # if (prob_weights < 0):
+            #     prob_weights = 0
             model["prob_weights"] = prob_weights
             lambda_values[model["kernel"]] = prob_weights
             print(
-                f"Kernel: {model['kernel']} - Accuracy: {model['accuracy']} - Prob_weights: {prob_weights}")
+                f"Kernel: {model['kernel']} - Score: {model['metric_score']} - Prob_weights: {prob_weights}")
 
         #  sampling a kernel function with probability = lambda_values
         p = [item["prob_weights"] for item in early_models]
@@ -146,11 +150,12 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
             y_test = np.delete(y, boot_sample_index, axis=0)
             model = self.fit_kernel(X_train, y_train, kernel)
             # out of bag
-            predict_oobg = model.predict(X_test)
-            accuracy = accuracy_score(y_test, predict_oobg)
-            kernel_weight = 1 / (accuracy ** 2)
+            # predict_oobg = model.predict(X_test)
+            # accuracy = accuracy_score(y_test, predict_oobg)
+            metric_score = check_scoring(model, self.metric)(model, X_test, y_test)
+            kernel_weight = 1 / (metric_score ** 2)
             models.append({'model': model, 'kernel': kernel,
-                           'accuracy': accuracy, 'kernel_weight': kernel_weight, index: boot_sample_index})
+                           'accuracy': metric_score, 'kernel_weight': kernel_weight, index: boot_sample_index})
         self.models = models
 
         return self
