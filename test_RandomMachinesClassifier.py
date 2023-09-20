@@ -1,6 +1,6 @@
 from sklearn.model_selection import train_test_split
 from pyrmachines import RandomMachinesClassifier
-from sklearn.metrics import check_scoring
+from sklearn.metrics import check_scoring, get_scorer
 import pandas as pd
 
 
@@ -11,7 +11,7 @@ X = df.drop("variety", axis=1)
 metric = 'accuracy'
 rm = RandomMachinesClassifier(seed_bootstrap=123, metric=metric)
 rm.fit(X, y)#.predict(X)
-metric_score = check_scoring(rm, metric)(rm, X, y)
+metric_score = get_scorer(metric)(rm, X, y)
 print(f"Score na base Iris: {metric_score}")
 
 

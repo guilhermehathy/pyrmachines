@@ -2,7 +2,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
 from sklearn.svm import SVC
-from sklearn.metrics import check_scoring
+from sklearn.metrics import get_scorer
 from sklearn.metrics.pairwise import laplacian_kernel
 import numpy as np
 import pandas as pd
@@ -92,7 +92,7 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
             model = self.fit_kernel(X_train, y_train, kernel)
             # predict = model.predict(X_test)
             # accuracy = accuracy_score(y_test, predict)
-            metric_score = check_scoring(model, self.metric)(model, X_test, y_test)
+            metric_score = get_scorer(self.metric)(model, X_test, y_test)
             if (metric_score == 1):
                 metric_score_log = 6.906755
             elif (metric_score == 0):
@@ -104,7 +104,7 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
                 metric_score_log = 1
             early_models.append(
                 {'kernel': kernel, "model": model, 'metric_score': metric_score, 'metric_score_log': metric_score_log})
-            print(f"Kernel: {kernel} - Score: {metric_score} - Log: {metric_score_log}")
+            # print(f"Kernel: {kernel} - Score: {metric_score} - Log: {metric_score_log}")
 
         # Calculating the probability of each kernel
         prob_weights_sum = sum(item["metric_score_log"] for item in early_models)
@@ -152,7 +152,7 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
             # out of bag
             # predict_oobg = model.predict(X_test)
             # accuracy = accuracy_score(y_test, predict_oobg)
-            metric_score = check_scoring(model, self.metric)(model, X_test, y_test)
+            metric_score = get_scorer(self.metric)(model, X_test, y_test)
             kernel_weight = 1 / (metric_score ** 2)
             models.append({'model': model, 'kernel': kernel,
                            'accuracy': metric_score, 'kernel_weight': kernel_weight, index: boot_sample_index})
