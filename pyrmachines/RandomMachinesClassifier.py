@@ -95,8 +95,8 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
             metric_score = get_scorer(self.metric)(model, X_test, y_test)
             if (metric_score == 1):
                 metric_score_log = 6.906755
-            elif (metric_score == 0):
-                metric_score_log = -6.906755
+            elif (metric_score <= 0.5):
+                metric_score_log = 0
             else:
                 # metric_score_log = np.log(np.divide(metric_score, np.subtract(1, metric_score)))
                 metric_score_log = np.log(metric_score / (1 - metric_score))
@@ -107,7 +107,8 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
             # print(f"Kernel: {kernel} - Score: {metric_score} - Log: {metric_score_log}")
 
         # Calculating the probability of each kernel
-        prob_weights_sum = sum(item["metric_score_log"] for item in early_models)
+        prob_weights_sum = sum(item["metric_score_log"]
+                               for item in early_models)
         lambda_values = {}
         for model in early_models:
             prob_weights = max(model["metric_score_log"] / prob_weights_sum, 0)
@@ -153,7 +154,12 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
             # predict_oobg = model.predict(X_test)
             # accuracy = accuracy_score(y_test, predict_oobg)
             metric_score = get_scorer(self.metric)(model, X_test, y_test)
-            kernel_weight = 1 / (metric_score ** 2)
+            if (metric_score == 1):
+                kernel_weight = 1e+16
+            else:
+                kernel_weight = 1 / ((1 - metric_score) ** 2)
+            print(
+                f"Kernel: {kernel} - Score: {metric_score} - Weight: {kernel_weight}")
             models.append({'model': model, 'kernel': kernel,
                            'accuracy': metric_score, 'kernel_weight': kernel_weight, index: boot_sample_index})
         self.models = models
