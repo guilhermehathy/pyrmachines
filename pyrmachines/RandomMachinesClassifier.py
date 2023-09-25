@@ -128,12 +128,12 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
         boots_samples_index = []
         for i in range(self.boots_size):
             nrow = len(X)
-            nclass = len(self.classes_)
+            # nclass = len(self.classes_)
             train_index = np.random.choice(
                 range(nrow), size=nrow, replace=True)
             table = np.unique(y[train_index], return_counts=True)
             ntable = len(table[0])
-            while (ntable != nclass):
+            while (ntable < 2):
                 train_index = np.random.choice(
                     range(nrow), size=nrow, replace=True)
                 table = np.unique(y[train_index], return_counts=True)
