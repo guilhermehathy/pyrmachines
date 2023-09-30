@@ -7,9 +7,56 @@ from sklearn.metrics.pairwise import laplacian_kernel
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 
 class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
+    """Random Machines Classifier
+    Parameters
+    ----------
+    cost : float, default=1
+        Regularization parameter. The strength of the regularization is
+        inversely proportional to C. Must be strictly positive. The penalty
+        is a squared l2 penalty.
+    degree : int, default=2
+        Degree of the polynomial kernel function ('poly').
+        Ignored by all other kernels.
+    coef0_poly : float, default=0.0
+        Independent term in kernel function.
+        It is only significant in 'poly' kernel.
+    boots_size : int, default=25
+        Number of bootstrap samples.
+    seed_bootstrap : int, default=None
+        Seed for bootstrap and kernel selection.
+    metric : str, default='accuracy'
+        Metric used to evaluate the model.
+    poly_scale : float, default=2
+        Kernel coefficient for 'poly'.
+    gamma_rbf : float, default=1
+        Kernel coefficient for 'rbf'.
+    gamma_lap : float, default=1
+        Kernel coefficient for 'laplacian'.
+    automatic_tuning : bool, default=False
+        If True, gamma_rbf and gamma_lap are tuned automatically.
+
+    References
+    ----------
+    .. [1] `Random Machines: A Bagged-Weighted Support Vector Model with Free Kernel Choice
+        <https://jds-online.org/journal/JDS/article/899/info>`_
+    Examples
+    --------
+    >>>from sklearn import datasets
+    >>>from pyrmachines import RandomMachinesClassifier
+    >>>from sklearn.model_selection import train_test_split
+    >>>iris = datasets.load_iris()
+    >>>X= iris.data
+    >>>y= iris.target
+    >>>X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=11)
+    >>>rm = RandomMachinesClassifier(seed_bootstrap=123)
+    >>>rm.fit(X_train, y_train)
+    >>>predict = rm.predict(X_test)
+    >>>print(predict)
+    """
 
     def __init__(self,
                  poly_scale=2,
@@ -17,20 +64,10 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
                  gamma_rbf=1,
                  gamma_lap=1,
                  degree=2,
-                 cost=10,
+                 cost=1,
                  metric='accuracy',
                  boots_size=25, seed_bootstrap=None, automatic_tuning=False):
-        """
-        Parameters:
-            poly_scale: float, default=2
-            coef0_poly: float, default=0
-            gamma_rbf: float, default=1
-            gamma_lap: float, default=1
-            degree: float, default=2
-            cost: float, default=10
-            boots_size: float, default=25
-            automatic_tuning: bool, default=False
-        """
+
         self.poly_scale = poly_scale
         self.coef0_poly = coef0_poly
         self.gamma_rbf = gamma_rbf
@@ -86,7 +123,7 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
         early_models = []
 
         X_train, X_test, y_train, y_test = train_test_split(
-            X, y, random_state=self.seed_bootstrap, test_size=0.2)
+            X, y, random_state=self.seed_bootstrap, test_size=0.3)
 
         for kernel in kernel_type:
             model = self.fit_kernel(X_train, y_train, kernel)
@@ -155,9 +192,9 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
             # accuracy = accuracy_score(y_test, predict_oobg)
             metric_score = get_scorer(self.metric)(model, X_test, y_test)
             if (metric_score == 1):
-                kernel_weight = 1e+16
+                kernel_weight = 120
             else:
-                kernel_weight = 1 / ((1 - metric_score) ** 2)
+                kernel_weight = 1 / ((1 - metric_score))
             print(
                 f"Kernel: {kernel} - Score: {metric_score} - Weight: {kernel_weight}")
             models.append({'model': model, 'kernel': kernel,
@@ -198,6 +235,20 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
                 predict_df.loc[i, predict[i]] += model_weights
         return list(predict_df.idxmax(axis=1))
 
+    def sigest(self, X):
+        frac = 0.5
+        x = X.copy()
+        scaler = StandardScaler()
+        x = scaler.fit_transform(x)
+        m = x.shape[0]
+        n = int(np.floor(frac * m))
+        index = np.random.choice(m, n, replace=True)
+        index2 = np.random.choice(m, n, replace=True)
+        temp = x[index] - x[index2]
+        dist = np.sum(temp**2, axis=1)
+        srange = 1 / np.quantile(dist[dist != 0], q=[0.9, 0.5, 0.1])
+        return srange[1]
+
     def fit_kernel(self, X_train, y_train, kernel):
         if (kernel == "linear"):
             model = SVC(kernel="linear",
@@ -216,11 +267,13 @@ class RandomMachinesClassifier(BaseEstimator, ClassifierMixin):
             model = SVC(kernel="rbf",
                         C=self.cost,
                         probability=False,
-                        gamma='scale' if self.automatic_tuning else self.gamma_rbf,
+                        gamma=self.sigest(
+                            X_train) if self.automatic_tuning else self.gamma_rbf,
                         verbose=0).fit(X_train, y_train)
         elif (kernel == "laplacian"):
             model = SVC(kernel=laplacian_kernel,
-                        gamma='scale' if self.automatic_tuning else self.gamma_lap,
+                        gamma=self.sigest(
+                            X_train) if self.automatic_tuning else self.gamma_lap,
                         C=self.cost,
                         probability=False,
                         verbose=0).fit(X_train, y_train)
