@@ -22,6 +22,13 @@ w_i = \frac{1}{(1 - \Omega_i)^2},
 
 where $\Omega_i$ is the accuracy of the $i$-th model's predictions $g_i$ calculated on Out of Bag Sample $\(OOBG_i\)$ obtained from $i$-th bootstrap sample $\forall i = 1, . . . , B$ as test sample.
 
+Final Classification:
+The final classification decision is made by aggregating the predictions of all the base SVM models, each weighted by their respective weight $w_i$, according to:
+
+$$G(x) = \text{sign} \left( \sum_{j=1}^B w_j g_j(x) \right),$$
+
+Where $B$ is the number of bootstrap samples, $g_j(x)$ is the prediction from $j$-th model, and $G(x)$ the aggregated prediction.
+
 ## Bibliography
 
 To learn more about the methods and how they are work please check.
