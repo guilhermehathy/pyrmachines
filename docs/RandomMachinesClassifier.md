@@ -76,5 +76,6 @@ classifier.fit(X_train, y_train)
 
 # Predict
 predictions = classifier.predict(X_test)
-print(predictions)```
+print(predictions)
+```
 
