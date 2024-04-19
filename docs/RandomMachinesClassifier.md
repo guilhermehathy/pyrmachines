@@ -57,7 +57,8 @@ Fit an individual support vector classifier using a specified kernel.
 
 ## Example of Usage
 
-`from sklearn.datasets import load_iris
+```
+from sklearn.datasets import load_iris
 from your_package_name import RandomMachinesClassifier
 from sklearn.model_selection import train_test_split
 
@@ -75,5 +76,5 @@ classifier.fit(X_train, y_train)
 
 # Predict
 predictions = classifier.predict(X_test)
-print(predictions)`
+print(predictions)```
 
