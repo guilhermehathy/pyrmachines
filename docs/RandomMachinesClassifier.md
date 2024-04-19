@@ -49,7 +49,7 @@ Fit an individual support vector classifier using a specified kernel.
 
 **Parameters:**
 - **X_train** (array-like, shape (n_samples, n_features)): Training data.
-- **y_train** (array-like, shape (n_samples,)): Labels for training data.
+- **y_train** (array-like, shape (n_samples)): Labels for training data.
 - **kernel** (str): Specifies the kernel type to be used in the model.
 
 **Returns:**
