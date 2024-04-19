@@ -59,7 +59,7 @@ Fit an individual support vector classifier using a specified kernel.
 
 ```
 from sklearn.datasets import load_iris
-from your_package_name import RandomMachinesClassifier
+from pyrmachines import RandomMachinesClassifier
 from sklearn.model_selection import train_test_split
 
 # Load data
