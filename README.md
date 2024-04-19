@@ -2,7 +2,7 @@
 
 # Random Machines
 
-Random Machines: a package for a support vector ensemble based on random kernel space.
+A novel ensemble method employing Support Vector Machines (SVMs) as base learners. This powerful ensemble model is designed for both classification (Ara A., et. al, 2021) <doi:10.6339/21-JDS1014>, and regression (Ara A., et. al, 2021) <doi:10.1016/j.eswa.2022.117107> problems, offering versatility and robust performance across different datasets and compared with other consolidated methods as Random Forests (Maia M, et. al, 2021) <doi:10.6339/21-JDS1025>.
 
 ## Bibliography
 
