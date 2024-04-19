@@ -14,13 +14,13 @@ The Random Machines Classifier is an ensemble method that leverages multiple ker
 Kernel functions transform the input data into a higher-dimensional space where a hyperplane can be used to separate classes. The Random Machines method evaluates multiple kernel functions, such as linear, polynomial, and radial basis functions (RBF), to determine which provides the best performance during training.
 
 ### Model Weights:
-Each base SVM model within the ensemble is weighted based on its out-of-bag (OOB) prediction accuracy. The weight $w_i$ for model $ \( i \) $ is calculated as:
+Each base SVM model within the ensemble is weighted based on its out-of-bag (OOB) prediction accuracy. The weight $w_i$ for model $i$ is calculated as:
 
 ```math
 w_i = \frac{1}{(1 - \Omega_i)^2},
 ```
 
-where $ \Omega_i $ is the accuracy of the $i$-th model's predictions $ g_i $ calculated on Out of Bag Sample $\(OOBG_i\)$ obtained from $i$-th bootstrap sample $\forall i = 1, . . . , B$ as test sample.
+where $\Omega_i$ is the accuracy of the $i$-th model's predictions $g_i$ calculated on Out of Bag Sample $\(OOBG_i\)$ obtained from $i$-th bootstrap sample $\forall i = 1, . . . , B$ as test sample.
 
 ## Bibliography
 
