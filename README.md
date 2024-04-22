@@ -6,7 +6,7 @@ A novel ensemble method employing Support Vector Machines (SVMs) as base learner
 
 # Random Machines Classifier - Conceptual Overview
 
-The Random Machines Classifier is an ensemble method that leverages multiple kernel functions within Support Vector Machine (SVM) models to perform classification tasks. Here's a breakdown of the key concepts and the algorithmic process described in the provided article:
+The Random Machines Classifier is an ensemble method that leverages multiple kernel functions within Support Vector Machine (SVM) models to perform classification tasks.
 
 ## Conceptual Components:
 
@@ -14,6 +14,7 @@ The Random Machines Classifier is an ensemble method that leverages multiple ker
 Kernel functions transform the input data into a higher-dimensional space where a hyperplane can be used to separate classes. The Random Machines method evaluates multiple kernel functions, such as linear, polynomial, and radial basis functions (RBF), to determine which provides the best performance during training.
 
 ### Model Weights:
+
 Each base SVM model within the ensemble is weighted based on its out-of-bag (OOB) prediction accuracy. The weight $w_i$ for model $i$ is calculated as:
 
 ```math
@@ -28,6 +29,10 @@ The final classification decision is made by aggregating the predictions of all 
 $$G(x) = \text{sign} \left( \sum_{j=1}^B w_j g_j(x) \right),$$
 
 Where $B$ is the number of bootstrap samples, $g_j(x)$ is the prediction from $j$-th model, and $G(x)$ the aggregated prediction.
+
+# Random Machines Regressor - Conceptual Overview
+
+
 
 ## Bibliography
 
